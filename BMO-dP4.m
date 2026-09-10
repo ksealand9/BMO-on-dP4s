@@ -1,7 +1,3 @@
-// Run from the directory containing both files:
-//     load "BMO-dP4.m";
-// Not executed in Magma here.
-
 load "Hasse--Minkowski.m";
 
 // Keep the supplied point for this example. Set false to compute a point
@@ -52,14 +48,6 @@ PencilData := function(root,M3,M4)
     return gram,basis;
 end function;
 
-PrintDiscriminant := procedure(label,epsilon)
-    norm := Norm(epsilon);
-    print label, epsilon;
-    print "  Is square?", IsSquare(epsilon);
-    print "  Norm:", norm;
-    print "  Is norm square?", IsSquare(norm);
-end procedure;
-
 gram1,basis1 := PencilData(rat,M3,M4);
 gram2,basis2 := PencilData(sqy,M3,M4);
 gram3,basis3 := PencilData(the,M3,M4);
@@ -67,9 +55,6 @@ gram3,basis3 := PencilData(the,M3,M4);
 epsilon1 := Determinant(gram1);
 epsilon2 := Determinant(gram2);
 epsilon3 := Determinant(gram3);
-PrintDiscriminant("epsilon1:",epsilon1);
-PrintDiscriminant("epsilon2:",epsilon2);
-PrintDiscriminant("epsilon3:",epsilon3);
 
 // A point on the four-variable quadric from the second factor.
 quadric := QuadraticForm(gram2);
@@ -97,7 +82,6 @@ end if;
 
 assert exists{c : c in point | c ne 0};
 assert Evaluate(quadric,point) eq 0;
-print "Point:", point;
 
 // Tangent hyperplane in the four reduced coordinates.
 P3<v0,v1,v2,v3> := ProjectiveSpace(L2,3);
@@ -105,7 +89,6 @@ coordinates := [v0,v1,v2,v3];
 pointColumn := Matrix(L2,4,1,point);
 gradient := (gram2 + Transpose(gram2))*pointColumn;
 tangentForm := &+[gradient[i,1]*(coordinates[i]-point[i]) : i in [1..4]];
-print "Tangent form (reduced coordinates):", tangentForm;
 
 // The same tangent in the original five coordinates, via the image basis.
 ambientPoint := Vector(L2,point)*basis2;
@@ -115,7 +98,6 @@ ambientGradient := (ambientGram + Transpose(ambientGram))*
 P4<o0,o1,o2,o3,o4> := ProjectiveSpace(L2,4);
 ambientCoordinates := [o0,o1,o2,o3,o4];
 ambientTangent := &+[ambientGradient[i,1]*ambientCoordinates[i] : i in [1..5]];
-print "Tangent form (original coordinates):", ambientTangent;
 
 // Sample Hilbert-symbol evaluations for the tangent-norm representative.
 // The explicit formula below uses the supplied point, whose tangent is
@@ -155,7 +137,6 @@ TryLocalInvariant := function(a,b,p)
 end function;
 
 ELSprimes := [factor[1] : factor in deltaFactors];
-print "Primes dividing the numerator of Delta:", ELSprimes;
 
 numerator := (24*u0-10*u4)^2 - 1250*u3^2;
 denominator := (u4+u2)^2;
@@ -188,10 +169,8 @@ for p in ELSprimes cat [11] do
     determined,invariant := TryPointInvariant(localPoint,p);
     if determined then
         invariants[p] := invariant;
-        print "Local invariant:", invariant;
     else
-        Append(~undetermined,p);
-        print "Undetermined at the current precision.";
+        Append(~undetermined,p);;
     end if;
 end for;
 
@@ -201,8 +180,6 @@ end for;
 precision := 10;
 maxPrecision := 80;
 while #undetermined gt 0 and precision le maxPrecision do
-    print "Unresolved primes:", undetermined;
-    print "Requested lifting precision:", precision;
     remaining := [Integers() | ];
 
     for p in undetermined do
@@ -221,7 +198,17 @@ while #undetermined gt 0 and precision le maxPrecision do
     precision *:= 2;
 end while;
 
-print "Determined sample invariants:", invariants;
-print "Still unresolved:", undetermined;
-// Keep any unresolved primes: the precision cap is not a mathematical verdict.
-// This lifts one chosen approximation per prime, not all its residue-class lifts.
+if #undetermined gt 0 then
+    print "Cannot compute the sum: unresolved primes", undetermined;
+else
+    localInvariantSum := &+[invariants[p] : p in Keys(invariants)];
+    localInvariantSum -:= Floor(localInvariantSum);
+
+    print "Sum of local invariants (mod 1):", localInvariantSum;
+
+    if localInvariantSum ne 0 then
+        print "There is a Brauer--Manin obstruction.";
+    else
+        print "There is no Brauer--Manin obstruction.";
+    end if;
+end if;
