@@ -1,7 +1,4 @@
 R<x> := PolynomialRing(Rationals());
-field := NumberField(x^2 - 3);
-P3<y4,y5,y6,y7> := ProjectiveSpace(field, 3);
-Q := y4^2 + 17*y5^2 + 5*y6^2 - 35*y7^2;
 
 SolveInequalities := function(a, b, c, d, sign1, sign2, r)
     assert sign1 in {-1,1} and sign2 in {-1,1};
@@ -232,5 +229,8 @@ HasseMinkowski := function(Q, field)
     return point;
 end function;
 
-Q;
-HasseMinkowski(Q,field);
+//field := NumberField(x^2 - 3);
+//P3<y4,y5,y6,y7> := ProjectiveSpace(field, 3);
+//Q := y4^2 + 17*y5^2 + 5*y6^2 - 35*y7^2;
+//Q;
+//HasseMinkowski(Q,field);
