@@ -123,7 +123,7 @@ print "Tangent form (original coordinates):", ambientTangent;
 ELSprimes := [factor[1] : factor in deltaFactors];
 print "Primes dividing the numerator of Delta:", ELSprimes;
 
-numerator := (3*u0-5*u3)^2 - 2*u2^2;
+numerator := (24*u0-10*u4)^2 - 1250*u3^2;
 denominator := (u4+u2)^2;
 expr := numerator/denominator;
 
