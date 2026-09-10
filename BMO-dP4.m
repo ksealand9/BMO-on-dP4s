@@ -127,6 +127,29 @@ numerator := (3*u0-5*u3)^2 - 2*u2^2;
 denominator := (u4+u2)^2;
 expr := numerator/denominator;
 
+// a is an exact nonzero rational; b is a finite-precision element of Q_p.
+TryLocalInvariant := function(a,b,p)
+    QQ := Rationals();
+    assert a ne 0;
+    required := p eq 2 select 3 else 1;
+
+    if b eq 0 then
+        return false,QQ!0;
+    end if;
+    if RelativePrecision(b) lt required then
+        return false,QQ!0;
+    end if;
+
+    v := Valuation(b);
+    unit := b/(QQ!p)^v;
+    u := (Integers()!unit) mod p^required;
+
+    representative := u*p^(v mod 2);
+    symbol := HilbertSymbol(QQ!a,QQ!representative,p);
+
+    return true,(1-symbol)/4;
+end function;
+
 for p in ELSprimes cat [11] do
     soluble,localPoint := IsLocallySoluble(X,p);
     assert soluble;
@@ -139,6 +162,11 @@ for p in ELSprimes cat [11] do
     value := Evaluate(numerator,localCoordinates)/denominatorValue;
     assert value ne 0;
     
-    symbol := HilbertSymbol(QQ!17,QQ!value,p);
-    print "Hilbert symbol:", symbol;
+    determined,invariant := TryLocalInvariant(17,value,p);
+
+    if determined then
+        print "Local invariant:", invariant;
+    else
+        print "Undetermined at the current precision.";
+    end if;
 end for;
