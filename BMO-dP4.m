@@ -132,10 +132,13 @@ for p in ELSprimes cat [11] do
     assert soluble;
     print "p:", p, "point:", localPoint;
 
-    // Only evaluate this representative where it is defined and nonzero.
-    assert Evaluate(denominator,localPoint) ne 0;
-    value := Evaluate(expr,localPoint);
+    localCoordinates := Eltseq(localPoint);
+    denominatorValue := Evaluate(denominator,localCoordinates);
+    assert denominatorValue ne 0;
+    
+    value := Evaluate(numerator,localCoordinates)/denominatorValue;
     assert value ne 0;
+    
     symbol := HilbertSymbol(QQ!17,QQ!value,p);
     print "Hilbert symbol:", symbol;
 end for;
