@@ -25,16 +25,35 @@ X := Scheme(ProjectiveSpace(U),[Q3,Q4]);
 M3 := SymmetricMatrix(Q4);
 M4 := SymmetricMatrix(Q3);
 f := Determinant(M3 + T*M4);
-factors := Factorisation(f);
-assert #factors eq 3;
+
+factorisation := Factorisation(f);
+degrees := [Degree(factor[1]) : factor in factorisation];
+Sort(~degrees);
 
 delta := Numerator(Discriminant(f));
 assert delta ne 0;
 deltaFactors := Factorisation(delta);
 
-f1 := factors[1][1];
-f2 := factors[2][1];
-f3 := factors[3][1];
+IndicesOfDegree := function(factorisation,d)
+    return [i : i in [1..#factorisation]
+              | Degree(factorisation[i][1]) eq d];
+end function;
+
+if degrees eq [5] or degrees eq [1,4] then
+    print "Br(X)/Br(Q) is trivial.";
+    return true, Rationals()!0;
+end if;
+
+assert degrees eq [1,2,2];
+
+i1 := IndicesOfDegree(factorisation,1)[1];
+i2 := IndicesOfDegree(factorisation,2)[1];
+i3 := IndicesOfDegree(factorisation,2)[2];
+
+f1 := factorisation[i1][1];
+f2 := factorisation[i2][1];
+f3 := factorisation[i3][1];
+
 assert Degree(f2) eq 2 and Degree(f3) eq 2;
 
 L1<rat> := quo<R | f1>;
