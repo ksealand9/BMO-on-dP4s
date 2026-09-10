@@ -9,8 +9,13 @@ QQ := Rationals();
 R<T> := PolynomialRing(QQ);
 U<u0,u1,u2,u3,u4> := PolynomialRing(QQ,5);
 
-Q4 := u0*u3 - 17*u1*u2;
-Q3 := -12*u0^2 + 204*u1^2 + 408*u2^2 + 25*u3^2 - 2*u4^2;
+//Q4 := u0*u3 - 17*u1*u2;
+//Q3 := -12*u0^2 + 204*u1^2 + 408*u2^2 + 25*u3^2 - 2*u4^2;
+
+BMO := function(Q3,Q4 : UseKnownPoint := true)
+    assert Parent(Q3) eq U and Parent(Q4) eq U;
+    assert BaseRing(U) eq QQ and Rank(U) eq 5;
+    
 X := Scheme(ProjectiveSpace(U),[Q3,Q4]);
 
 // PointSearch(X,100);
@@ -207,3 +212,6 @@ else
         print "There is no Brauer--Manin obstruction.";
     end if;
 end if;
+
+    return true, localInvariantSum;
+end function;
