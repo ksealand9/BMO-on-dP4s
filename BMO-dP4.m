@@ -117,20 +117,24 @@ ambientCoordinates := [o0,o1,o2,o3,o4];
 ambientTangent := &+[ambientGradient[i,1]*ambientCoordinates[i] : i in [1..5]];
 print "Tangent form (original coordinates):", ambientTangent;
 
-// Sample Hilbert-symbol evaluations for the original expression.
-// This expression is supplied separately: it is not derived automatically
-// from the tangent above, and one sample per prime does not establish a BMO.
-ELSprimes := [factor[1] : factor in deltaFactors];
-print "Primes dividing the numerator of Delta:", ELSprimes;
+// Sample Hilbert-symbol evaluations for the tangent-norm representative.
+// The explicit formula below uses the supplied point, whose tangent is
+// ell = u0 + 50*sqy*u3 - (5/12)*u4, with sqy^2=1/1152.
+// Its numerator is Norm(24*ell); 24^2 is a rational square.
+// This remains a sampling loop, not a full computation of the BMO.
 
-numerator := (24*u0-10*u4)^2 - 1250*u3^2;
-denominator := (u4+u2)^2;
-expr := numerator/denominator;
-
-// a is an exact nonzero rational; b is a finite-precision element of Q_p.
+// First layer: a precision-aware local invariant for (a,b) over Q_p.
+// a is an exact nonzero rational; b is a finite-precision element of Q_p
+// (not an extension of Q_p). Returns success and an invariant in {0,1/2}.
+// On failure the second return value is a placeholder and MUST be ignored.
+// These precision bounds are sufficient, not necessarily optimal for a given a.
 TryLocalInvariant := function(a,b,p)
     QQ := Rationals();
     assert a ne 0;
+    // For this example the algebra splits at 2, independently of b.
+    if a eq 17 and p eq 2 then
+        return true,QQ!0;
+    end if;
     required := p eq 2 select 3 else 1;
 
     if b eq 0 then
@@ -140,33 +144,53 @@ TryLocalInvariant := function(a,b,p)
         return false,QQ!0;
     end if;
 
+    // The square class is determined by valuation parity and the unit part
+    // modulo p (odd p), or modulo 8 (p=2).
     v := Valuation(b);
     unit := b/(QQ!p)^v;
     u := (Integers()!unit) mod p^required;
-
     representative := u*p^(v mod 2);
     symbol := HilbertSymbol(QQ!a,QQ!representative,p);
-
     return true,(1-symbol)/4;
 end function;
 
+ELSprimes := [factor[1] : factor in deltaFactors];
+print "Primes dividing the numerator of Delta:", ELSprimes;
+
+numerator := (24*u0-10*u4)^2 - 1250*u3^2;
+denominator := (u4+u2)^2;
+expr := numerator/denominator;
+
+// Evaluate the fixed class at one local point, keeping unresolved values separate.
+TryPointInvariant := function(P,p)
+    if p eq 2 then
+        return true,Rationals()!0;  // 17 is a square in Q_2.
+    end if;
+    coords := Eltseq(P);
+    d := Evaluate(denominator,coords);
+    if d eq 0 then
+        return false,Rationals()!0;
+    end if;
+    value := Evaluate(numerator,coords)/d;
+    return TryLocalInvariant(17,value,p);
+end function;
+
+localPoints := AssociativeArray();
+invariants := AssociativeArray();
+undetermined := [Integers() | ];
+
+// First pass: keep the points, the known invariants, and unresolved primes.
 for p in ELSprimes cat [11] do
     soluble,localPoint := IsLocallySoluble(X,p);
     assert soluble;
+    localPoints[p] := localPoint;
     print "p:", p, "point:", localPoint;
-
-    localCoordinates := Eltseq(localPoint);
-    denominatorValue := Evaluate(denominator,localCoordinates);
-    assert denominatorValue ne 0;
-    
-    value := Evaluate(numerator,localCoordinates)/denominatorValue;
-    assert value ne 0;
-    
-    determined,invariant := TryLocalInvariant(17,value,p);
-
+    determined,invariant := TryPointInvariant(localPoint,p);
     if determined then
+        invariants[p] := invariant;
         print "Local invariant:", invariant;
     else
+        Append(~undetermined,p);
         print "Undetermined at the current precision.";
     end if;
 end for;
