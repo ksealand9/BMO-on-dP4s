@@ -170,3 +170,34 @@ for p in ELSprimes cat [11] do
         print "Undetermined at the current precision.";
     end if;
 end for;
+
+// Refine only unresolved points. These are requested precisions: Strict:=false
+// permits a lower achieved precision when limited by the ambient local field.
+// Always let TryLocalInvariant check the precision actually obtained.
+precision := 10;
+maxPrecision := 80;
+while #undetermined gt 0 and precision le maxPrecision do
+    print "Unresolved primes:", undetermined;
+    print "Requested lifting precision:", precision;
+    remaining := [Integers() | ];
+
+    for p in undetermined do
+        localPoints[p] := LiftPoint(localPoints[p],precision : Strict := false);
+        determined,invariant := TryPointInvariant(localPoints[p],p);
+        if determined then
+            invariants[p] := invariant;
+            print "p:", p, "local invariant:", invariant;
+        else
+            Append(~remaining,p);
+            print "p:", p, "still undetermined";
+        end if;
+    end for;
+
+    undetermined := remaining;
+    precision *:= 2;
+end while;
+
+print "Determined sample invariants:", invariants;
+print "Still unresolved:", undetermined;
+// Keep any unresolved primes: the precision cap is not a mathematical verdict.
+// This lifts one chosen approximation per prime, not all its residue-class lifts.
