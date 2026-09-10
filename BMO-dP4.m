@@ -23,12 +23,9 @@ f := Determinant(M3 + T*M4);
 factors := Factorisation(f);
 assert #factors eq 3;
 
-print "f:", factors;
-print "LC(f):", LeadingCoefficient(f);
 delta := Numerator(Discriminant(f));
 assert delta ne 0;
 deltaFactors := Factorisation(delta);
-print "Delta:", deltaFactors;
 
 f1 := factors[1][1];
 f2 := factors[2][1];
@@ -58,7 +55,6 @@ epsilon3 := Determinant(gram3);
 
 // A point on the four-variable quadric from the second factor.
 quadric := QuadraticForm(gram2);
-print "Quadric:", quadric;
 
 if UseKnownPoint then
     point := [L2 | 0,0,1,120*sqy];
@@ -165,7 +161,6 @@ for p in ELSprimes cat [11] do
     soluble,localPoint := IsLocallySoluble(X,p);
     assert soluble;
     localPoints[p] := localPoint;
-    print "p:", p, "point:", localPoint;
     determined,invariant := TryPointInvariant(localPoint,p);
     if determined then
         invariants[p] := invariant;
